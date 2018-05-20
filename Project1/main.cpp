@@ -1,21 +1,13 @@
 #include <SFML/Graphics.hpp>
-#include "iostream"
-#include "string"
-#include <conio.h>
-#include <Windows.h>
 #include <fstream>
-#include <ctime>
-#include <sstream>
 #pragma warning(disable : 4996)
+#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 using namespace std;
 using namespace sf;
 
 //Функция выбора случайного слова
 char ViborSlova(char slovo[20])
 {
-	SetConsoleCP(1251);
-	SetConsoleOutputCP(1251);
-
 	int row = 1;
 
 	srand(time(NULL));
@@ -36,22 +28,20 @@ char ViborSlova(char slovo[20])
 }
 
 //Функция окна меню
-void menu(RenderWindow & window) 
+void menu(RenderWindow & window)
 {
 
 	Texture aboutTexture, menutexture;
-
 	aboutTexture.loadFromFile("images/about.png");
 	menutexture.loadFromFile("images/3ФОН.png");
-	//Загрузка шрифта
+
 	Font font1, font2, font3;
 	font1.loadFromFile("font/10460.ttf");
 	font2.loadFromFile("font/11814.ttf");
 	font3.loadFromFile("font/yugothiclight.ttf");
 
 	Text text1, text2, text3;
-	
-	//Выбираем шрифт
+
 	text1.setFont(font3);
 	text1.setString(L"Новая игра");
 	text1.setPosition(320, 280);
@@ -73,7 +63,7 @@ void menu(RenderWindow & window)
 
 	while (isMenu)
 	{
-		
+
 
 		text1.setColor(Color::Black);
 		text1.setScale(Vector2f(1.f, 1.f));
@@ -95,11 +85,20 @@ void menu(RenderWindow & window)
 
 		menuNum = 0;
 
+		Event event;
+		while (window.pollEvent(event))
+		{
+			if (event.type == Event::Closed)
+			{
+				window.close();
+				isMenu = false;
+			}
+		}
 
 		if (IntRect(235, 245, 330, 40).contains(Mouse::getPosition(window))) { text1.setCharacterSize(50); text1.setPosition(228, 265); menuNum = 1; }
 		if (IntRect(220, 305, 350, 40).contains(Mouse::getPosition(window))) { text2.setCharacterSize(50); text2.setPosition(203, 325); menuNum = 2; }
 		if (IntRect(305, 365, 175, 40).contains(Mouse::getPosition(window))) { text3.setCharacterSize(50); text3.setPosition(305, 390); menuNum = 3; }
-		
+
 		if (Mouse::isButtonPressed(Mouse::Left))
 		{
 			if (menuNum == 1) isMenu = false;
@@ -107,15 +106,12 @@ void menu(RenderWindow & window)
 			if (menuNum == 3) { window.close(); isMenu = false; }
 
 		}
-
-		//Vector2i pixelPos = Mouse::getPosition(window);//забираем коорд курсора
-		//cout << pixelPos.x << "  " << pixelPos.y << "\n";//смотрим на координату Х позиции курсора в консоли (она не будет больше ширины окна)
-
+		
 		window.draw(Menu);
 		window.draw(text1);
 		window.draw(text2);
 		window.draw(text3);
-		
+
 		window.display();
 	}
 }
@@ -141,7 +137,7 @@ void WIN(RenderWindow & window)
 		{
 			if (event.type == Event::Closed)
 			{
-				window.close(); 
+				window.close();
 				isMenu = false;
 			}
 		}
@@ -182,98 +178,86 @@ void LOSE(RenderWindow & window)
 }
 
 //Функция проверки выбранной буквы
-int proverkabukvi(char simvol, char *slovo, bool *proverka, float *pos1, int &oshibki, int &pravilno, int &schetPovtor, int &dlinaPovtorSimvol, char *povtorSimvol, int &prov)
-	{
-		cout << simvol << "\n";
-		cout << slovo << "\n";
-		char alphavit[66] = { 'а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ь', 'ы', 'ъ', 'э', 'ю', 'я' };
-		int pos;
-		int dlina = strlen(slovo);
-		bool povtorbukvi = true;
+int proverkabukvi(char simvol, char *slovo, bool *proverka, int &oshibki, int &pravilno, int &schetPovtor, int &dlinaPovtorSimvol, char *povtorSimvol, int &prov, int &num, int &simvolnumber, int mass[], int razmer)
+{
+	char alphavit[66] = { 'а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ь', 'ы', 'ъ', 'э', 'ю', 'я' };
+	int pos, pos1, sad = 0;
+	int dlina = strlen(slovo);
+	bool povtorbukvi = true;
 
-		*proverka = false;
+	*proverka = false;
 
-		for (int i = 0; i < dlinaPovtorSimvol; i++)
-			if (simvol == povtorSimvol[i])
-			{
-				cout << "\nЭта буква уже была введена. Введите другую букву.\n\n";
-				povtorbukvi = false;
-				prov = 3;
-				return 0;
-			}
-
-		for (int i = 0; i < dlina; i++)
+	for (int i = 0; i < dlinaPovtorSimvol; i++)
+		if (simvol == povtorSimvol[i])
 		{
-			if (simvol == slovo[i])
+			povtorbukvi = false;
+			prov = 3;
+			return 0;
+		}
+
+	for (int i = 0; i < dlina; i++)
+		if (simvol == slovo[i])
+			num++;
+
+	for (int i = 0; i < num; i++)
+	{
+		for (sad; sad < dlina; sad++)
+		{
+			if (simvol == slovo[sad])
 			{
 				pravilno++;
 				*proverka = true;
-				pos = i + 1;
-				cout << "Правильно " << pravilno << "\n";
+				pos = sad + 1;
 				prov = 1;
+				break;
 			}
 		}
-
-		if (!*proverka)
-		{
-			cout << "Нет, такой буквы в загаданом слове нет.\n\n";
-			oshibki--;
-			cout << "Ошибки " << oshibki << "\n";
-			prov = 2;
-		}
-
-		//Запоминаем выбранную букву
-		povtorSimvol[schetPovtor] = simvol;
-		schetPovtor++;
-		dlinaPovtorSimvol = strlen(povtorSimvol);
 
 		//Ищем позицию выбранной буквы и задаем ей координаты
 		switch (pos)
 		{
-		case 1: *pos1 = 375 - 20.5*(dlina - 1); break;
-		case 2: *pos1 = 416 - 20.5*(dlina - 1); break;
-		case 3: *pos1 = 457 - 20.5*(dlina - 1); break;
-		case 4: *pos1 = 498 - 20.5*(dlina - 1); break;
-		case 5: *pos1 = 539 - 20.5*(dlina - 1); break;
-		case 6: *pos1 = 580 - 20.5*(dlina - 1); break;
-		case 7: *pos1 = 621 - 20.5*(dlina - 1); break;
-		case 8: *pos1 = 662 - 20.5*(dlina - 1); break;
-		case 9: *pos1 = 703 - 20.5*(dlina - 1); break;
-		case 10: *pos1 = 744 - 20.5*(dlina - 1); break;
-		case 11: *pos1 = 785 - 20.5*(dlina - 1); break;
-		case 12: *pos1 = 826 - 20.5*(dlina - 1); break;
-		case 13: *pos1 = 867 - 20.5*(dlina - 1); break;
-		case 14: *pos1 = 908 - 20.5*(dlina - 1); break;
-		case 15: *pos1 = 949 - 20.5*(dlina - 1); break;
-		case 16: *pos1 = 990 - 20.5*(dlina - 1); break;
+		case 1: pos1 = 375 - 20.5*(dlina - 1); break;
+		case 2: pos1 = 416 - 20.5*(dlina - 1); break;
+		case 3: pos1 = 457 - 20.5*(dlina - 1); break;
+		case 4: pos1 = 498 - 20.5*(dlina - 1); break;
+		case 5: pos1 = 539 - 20.5*(dlina - 1); break;
+		case 6: pos1 = 580 - 20.5*(dlina - 1); break;
+		case 7: pos1 = 621 - 20.5*(dlina - 1); break;
+		case 8: pos1 = 662 - 20.5*(dlina - 1); break;
+		case 9: pos1 = 703 - 20.5*(dlina - 1); break;
+		case 10: pos1 = 744 - 20.5*(dlina - 1); break;
+		case 11: pos1 = 785 - 20.5*(dlina - 1); break;
+		case 12: pos1 = 826 - 20.5*(dlina - 1); break;
+		case 13: pos1 = 867 - 20.5*(dlina - 1); break;
+		case 14: pos1 = 908 - 20.5*(dlina - 1); break;
+		case 15: pos1 = 949 - 20.5*(dlina - 1); break;
+		case 16: pos1 = 990 - 20.5*(dlina - 1); break;
 		}
+		
+		mass[i] = pos1;
+		sad = sad + 1;
+	}
 
-		if (pravilno == dlina)
-		{
-			cout << "Поздравляю, вы угадали слово!\n";
-			cout << "Слово было следующим: \"";
-			cout << slovo;
-			cout << "\".\n";
-			cout << "Спасибо за игру!\n";
-		}
+	if (!*proverka)
+	{
+		oshibki--;
+		prov = 2;
+	}
 
-		if (oshibki < 0)
-		{
-			cout << "\nУвы, вы превысили лимит допустимых ошибок.\n";
-			cout << "Слово было следующим: \"";
-			cout << slovo;
-			cout << "\".\n";
-			cout << "Спасибо за игру!\n";
-		}
- }
-	
+	//Запоминаем выбранную букву
+	povtorSimvol[schetPovtor] = simvol;
+	schetPovtor++;
+	dlinaPovtorSimvol = strlen(povtorSimvol);
+}
+
 //Основная функция
 int main()
 {
-	RenderWindow window(VideoMode(800, 480), "Game");
-	
+	RenderWindow window(VideoMode(800, 480), L"Виселица");
+	const int razmer = 10;
 	char slovo[20], simvol, povtorSimvol[20] = " ";
-	int bukva, oshibki = 9, pravilno = 0, schetPovtor = 0, dlinaPovtorSimvol = 0, ver = 0, never = 0, prov = 0;
+	int bukva, oshibki = 9, pravilno = 0, schetPovtor = 0, dlinaPovtorSimvol = 0, ver = 0, never = 0, prov = 0, num = 0, simvolnumber = 0, mass[razmer], aa = 0, aaa = 0, aaaa = 0;
+	int schetA = 0, schetB = 0, schetV = 0, schetG = 0, schetD = 0, schetE = 0, schetJ = 0, schetZ = 0, schetI1 = 0, schetI2 = 0, schetK = 0, schetL = 0, schetM = 0, schetN = 0, schetO = 0, schetP = 0, schetR = 0, schetS = 0, schetT = 0, schetY = 0, schetF = 0, schetH = 0, schetC = 0, schetCH = 0, schetSH = 0, schetSCH = 0, schetMYA = 0, schetII = 0, schetTV = 0, schetE1 = 0, schetU = 0, schetYA = 0;
 	float pos1 = 0;
 	bool proverka = false;
 
@@ -284,7 +268,7 @@ int main()
 	Font font3;
 	font3.loadFromFile("font/yugothiclight.ttf");
 
-	Text a, b, v, g, d, e, j, z, i, i1, k, l, m, n, o, p, r, s, t, y, f, h, c, ch, sh, sch, mya, ii, tv, e1, u, ya;
+	Text a[16], b[16], v[16], g[16], d[16], e[16], j[16], z[16], i1[16], i2[16], k[16], l[16], m[16], n[16], o[16], p[16], r[16], s[16], t[16], y[16], f[16], h[16], c[16], ch[16], sh[16], sch[16], mya[16], ii[16], tv[16], e1[16], u[16], ya[16];
 
 	Texture texture, blocktexture, Vis1, Vis2, Vis3, Vis4, Vis5, Vis6, Vis7, Vis8, Vis9, Vis10, Verno, Neverno, PovtorVibor;
 	texture.loadFromFile("images/ФОН.png");
@@ -338,7 +322,7 @@ int main()
 	neverno.setPosition(380, 200);
 	povtorVibor.setTexture(PovtorVibor);
 	povtorVibor.setPosition(370, 200);
-	
+
 	int dlina = strlen(slovo);
 	int schet = 41, sdvig = 370;
 	for (int i = 0; i < dlina; i++)
@@ -348,252 +332,171 @@ int main()
 		schet = schet + 41;
 		sdvig = sdvig - 20;
 	}
-	
-	a.setFont(font3);
-	a.setString(L"А");
 
-	b.setFont(font3);
-	b.setString(L"Б");
-
-	v.setFont(font3);
-	v.setString(L"В");
-
-	g.setFont(font3);
-	g.setString(L"Г");
-
-	d.setFont(font3);
-	d.setString(L"Д");
-
-	e.setFont(font3);
-	e.setString(L"Е");
-
-	j.setFont(font3);
-	j.setString(L"Ж");
-
-	z.setFont(font3);
-	z.setString(L"З");
-
-	i.setFont(font3);
-	i.setString(L"И");
-
-	i1.setFont(font3);
-	i1.setString(L"Й");
-
-	k.setFont(font3);
-	k.setString(L"К");
-
-	l.setFont(font3);
-	l.setString(L"Л");
-
-	m.setFont(font3);
-	m.setString(L"М");
-
-	n.setFont(font3);
-	n.setString(L"Н");
-
-	o.setFont(font3);
-	o.setString(L"О");
-
-	p.setFont(font3);
-	p.setString(L"П");
-
-	r.setFont(font3);
-	r.setString(L"Р");
-
-	s.setFont(font3);
-	s.setString(L"С");
-
-	t.setFont(font3);
-	t.setString(L"Т");
-
-	y.setFont(font3);
-	y.setString(L"У");
-
-	f.setFont(font3);
-	f.setString(L"Ф");
-
-	h.setFont(font3);
-	h.setString(L"Х");
-
-	c.setFont(font3);
-	c.setString(L"Ц");
-
-	ch.setFont(font3);
-	ch.setString(L"Ч");
-
-	sh.setFont(font3);
-	sh.setString(L"Ш");
-
-	sch.setFont(font3);
-	sch.setString(L"Щ");
-
-	mya.setFont(font3);
-	mya.setString(L"Ь");
-
-	ii.setFont(font3);
-	ii.setString(L"Ы");
-
-	tv.setFont(font3);
-	tv.setString(L"Ъ");
-
-	e1.setFont(font3);
-	e1.setString(L"Э");
-
-	u.setFont(font3);
-	u.setString(L"Ю");
-
-	ya.setFont(font3);
-	ya.setString(L"Я");
-	
-	Clock clock;
+	for (int i = 0; i < 16; i++) { a[i].setFont(font3); a[i].setString(L"А"); }
+	for (int i = 0; i < 16; i++) { b[i].setFont(font3); b[i].setString(L"Б"); }
+	for (int i = 0; i < 16; i++) { v[i].setFont(font3); v[i].setString(L"В"); }
+	for (int i = 0; i < 16; i++) { g[i].setFont(font3); g[i].setString(L"Г"); }
+	for (int i = 0; i < 16; i++) { d[i].setFont(font3); d[i].setString(L"Д"); }
+	for (int i = 0; i < 16; i++) { e[i].setFont(font3); e[i].setString(L"Е"); }
+	for (int i = 0; i < 16; i++) { j[i].setFont(font3); j[i].setString(L"Ж"); }
+	for (int i = 0; i < 16; i++) { z[i].setFont(font3); z[i].setString(L"З"); }
+	for (int i = 0; i < 16; i++) { i1[i].setFont(font3); i1[i].setString(L"И"); }
+	for (int i = 0; i < 16; i++) { i2[i].setFont(font3); i2[i].setString(L"Й"); }
+	for (int i = 0; i < 16; i++) { k[i].setFont(font3); k[i].setString(L"К"); }
+	for (int i = 0; i < 16; i++) { l[i].setFont(font3); l[i].setString(L"Л"); }
+	for (int i = 0; i < 16; i++) { m[i].setFont(font3); m[i].setString(L"М"); }
+	for (int i = 0; i < 16; i++) { n[i].setFont(font3); n[i].setString(L"Н"); }
+	for (int i = 0; i < 16; i++) { o[i].setFont(font3); o[i].setString(L"О"); }
+	for (int i = 0; i < 16; i++) { p[i].setFont(font3); p[i].setString(L"П"); }
+	for (int i = 0; i < 16; i++) { r[i].setFont(font3); r[i].setString(L"Р"); }
+	for (int i = 0; i < 16; i++) { s[i].setFont(font3); s[i].setString(L"С"); }
+	for (int i = 0; i < 16; i++) { t[i].setFont(font3); t[i].setString(L"Т"); }
+	for (int i = 0; i < 16; i++) { y[i].setFont(font3); y[i].setString(L"У"); }
+	for (int i = 0; i < 16; i++) { f[i].setFont(font3); f[i].setString(L"Ф"); }
+	for (int i = 0; i < 16; i++) { h[i].setFont(font3); h[i].setString(L"Х"); }
+	for (int i = 0; i < 16; i++) { c[i].setFont(font3); c[i].setString(L"Ц"); }
+	for (int i = 0; i < 16; i++) { ch[i].setFont(font3); ch[i].setString(L"Ч"); }
+	for (int i = 0; i < 16; i++) { sh[i].setFont(font3); sh[i].setString(L"Ш"); }
+	for (int i = 0; i < 16; i++) { sch[i].setFont(font3); sch[i].setString(L"Щ"); }
+	for (int i = 0; i < 16; i++) { mya[i].setFont(font3); mya[i].setString(L"Ь"); }
+	for (int i = 0; i < 16; i++) { ii[i].setFont(font3); ii[i].setString(L"Ы"); }
+	for (int i = 0; i < 16; i++) { tv[i].setFont(font3); tv[i].setString(L"Ъ"); }
+	for (int i = 0; i < 16; i++) { e1[i].setFont(font3); e1[i].setString(L"Э"); }
+	for (int i = 0; i < 16; i++) { u[i].setFont(font3); u[i].setString(L"Ю"); }
+	for (int i = 0; i < 16; i++) { ya[i].setFont(font3); ya[i].setString(L"Я"); }
 
 	while (window.isOpen())
 	{
-		Event event1;
-		while (window.pollEvent(event1))
-		{
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(370, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'а'; bukva = 1; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(418, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'б'; bukva = 2; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'в'; bukva = 3; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(514, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'г'; bukva = 4; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(562, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'д'; bukva = 5; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'е'; bukva = 6; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(650, 240, 40, 35).contains(Mouse::getPosition(window))) { simvol = 'ж'; bukva = 7; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'з'; bukva = 8; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(370, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'и'; bukva = 9; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(418, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'й'; bukva = 10; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'к'; bukva = 11; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(514, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'л'; bukva = 12; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(560, 288, 32, 35).contains(Mouse::getPosition(window))) { simvol = 'м'; bukva = 13; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'н'; bukva = 14; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(648, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'о'; bukva = 15; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'п'; bukva = 16; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(370, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'р'; bukva = 17; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(418, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'с'; bukva = 18; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'т'; bukva = 19; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(514, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'у'; bukva = 20; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(562, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ф'; bukva = 21; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'х'; bukva = 22; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(648, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ц'; bukva = 23; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ч'; bukva = 24; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(365, 384, 40, 35).contains(Mouse::getPosition(window))) { simvol = 'ш'; bukva = 25; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(413, 384, 40, 35).contains(Mouse::getPosition(window))) { simvol = 'щ'; bukva = 26; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 384, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ь'; bukva = 27; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(511, 384, 35, 35).contains(Mouse::getPosition(window))) { simvol = 'ы'; bukva = 28; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(556, 384, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ъ'; bukva = 29; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 384, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'э'; bukva = 30; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(650, 384, 40, 35).contains(Mouse::getPosition(window))) { simvol = 'ю'; bukva = 31; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 384, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'я'; bukva = 32; proverkabukvi(simvol, slovo, &proverka, &pos1, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov); }		
-		}
-
-		switch (bukva)
-		{
-		case 1: if (proverka) { a.setCharacterSize(40); a.setPosition(pos1, 100); a.setColor(Color::Black); } break;
-		case 2: if (proverka) { b.setCharacterSize(40); b.setPosition(pos1, 100); b.setColor(Color::Black); } break;
-		case 3: if (proverka) { v.setCharacterSize(40); v.setPosition(pos1, 100); v.setColor(Color::Black); } break;
-		case 4: if (proverka) { g.setCharacterSize(40); g.setPosition(pos1, 100); g.setColor(Color::Black); } break;
-		case 5: if (proverka) { d.setCharacterSize(40); d.setPosition(pos1, 100); d.setColor(Color::Black); } break;
-		case 6: if (proverka) { e.setCharacterSize(40); e.setPosition(pos1, 100); e.setColor(Color::Black); } break;
-		case 7: if (proverka) { j.setCharacterSize(40); j.setPosition(pos1, 100); j.setColor(Color::Black); } break;
-		case 8: if (proverka) { z.setCharacterSize(40); z.setPosition(pos1, 100); z.setColor(Color::Black); } break;
-		case 9: if (proverka) { i.setCharacterSize(40); i.setPosition(pos1, 100); i.setColor(Color::Black); } break;
-		case 10: if (proverka) { i1.setCharacterSize(40); i1.setPosition(pos1, 100); i1.setColor(Color::Black); } break;
-		case 11: if (proverka) { k.setCharacterSize(40); k.setPosition(pos1, 100); k.setColor(Color::Black); } break;
-		case 12: if (proverka) { l.setCharacterSize(40); l.setPosition(pos1, 100); l.setColor(Color::Black); } break;
-		case 13: if (proverka) { m.setCharacterSize(40); m.setPosition(pos1, 100); m.setColor(Color::Black); } break;
-		case 14: if (proverka) { n.setCharacterSize(40); n.setPosition(pos1, 100); n.setColor(Color::Black); } break;
-		case 15: if (proverka) { o.setCharacterSize(40); o.setPosition(pos1, 100); o.setColor(Color::Black); } break;
-		case 16: if (proverka) { p.setCharacterSize(40); p.setPosition(pos1, 100); p.setColor(Color::Black); } break;
-		case 17: if (proverka) { r.setCharacterSize(40); r.setPosition(pos1, 100); r.setColor(Color::Black); } break;
-		case 18: if (proverka) { s.setCharacterSize(40); s.setPosition(pos1, 100); s.setColor(Color::Black); } break;
-		case 19: if (proverka) { t.setCharacterSize(40); t.setPosition(pos1, 100); t.setColor(Color::Black); } break;
-		case 20: if (proverka) { y.setCharacterSize(40); y.setPosition(pos1, 100); y.setColor(Color::Black); } break;
-		case 21: if (proverka) { f.setCharacterSize(40); f.setPosition(pos1, 100); f.setColor(Color::Black); } break;
-		case 22: if (proverka) { h.setCharacterSize(40); h.setPosition(pos1, 100); h.setColor(Color::Black); } break;
-		case 23: if (proverka) { c.setCharacterSize(40); c.setPosition(pos1, 100); c.setColor(Color::Black); } break;
-		case 24: if (proverka) { ch.setCharacterSize(40); ch.setPosition(pos1, 100); ch.setColor(Color::Black); } break;
-		case 25: if (proverka) { sh.setCharacterSize(40); sh.setPosition(pos1, 100); sh.setColor(Color::Black); } break;
-		case 26: if (proverka) { sch.setCharacterSize(40); sch.setPosition(pos1, 100); sch.setColor(Color::Black); } break;
-		case 27: if (proverka) { mya.setCharacterSize(40); mya.setPosition(pos1, 100); mya.setColor(Color::Black); } break;
-		case 28: if (proverka) { ii.setCharacterSize(40); ii.setPosition(pos1, 100); ii.setColor(Color::Black); } break;
-		case 29: if (proverka) { tv.setCharacterSize(40); tv.setPosition(pos1, 100); tv.setColor(Color::Black); } break;
-		case 30: if (proverka) { e1.setCharacterSize(40); e1.setPosition(pos1, 100); e1.setColor(Color::Black); } break;
-		case 31: if (proverka) { u.setCharacterSize(40); u.setPosition(pos1, 100); u.setColor(Color::Black); } break;
-		case 32: if (proverka) { ya.setCharacterSize(40); ya.setPosition(pos1, 100); ya.setColor(Color::Black); } break;
-		}
-
-		//Координаты мыши
-		//Vector2i pixelPos = Mouse::getPosition(window);//забираем коорд курсора
-		//cout << pixelPos.x << "  " << pixelPos.y << "\n";//смотрим на координату Х позиции курсора в консоли (она не будет больше ширины окна)
-
 		Event event;
 		while (window.pollEvent(event))
 		{
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(370, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'а'; bukva = 1; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(418, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'б'; bukva = 2; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'в'; bukva = 3; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(514, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'г'; bukva = 4; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(562, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'д'; bukva = 5; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'е'; bukva = 6; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(650, 240, 40, 35).contains(Mouse::getPosition(window))) { simvol = 'ж'; bukva = 7; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'з'; bukva = 8; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(370, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'и'; bukva = 9; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(418, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'й'; bukva = 10; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'к'; bukva = 11; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(514, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'л'; bukva = 12; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(560, 288, 32, 35).contains(Mouse::getPosition(window))) { simvol = 'м'; bukva = 13; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'н'; bukva = 14; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(648, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'о'; bukva = 15; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'п'; bukva = 16; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(370, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'р'; bukva = 17; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(418, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'с'; bukva = 18; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'т'; bukva = 19; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(514, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'у'; bukva = 20; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(562, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ф'; bukva = 21; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'х'; bukva = 22; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(648, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ц'; bukva = 23; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ч'; bukva = 24; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(365, 384, 40, 35).contains(Mouse::getPosition(window))) { simvol = 'ш'; bukva = 25; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(413, 384, 40, 35).contains(Mouse::getPosition(window))) { simvol = 'щ'; bukva = 26; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 384, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ь'; bukva = 27; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(511, 384, 35, 35).contains(Mouse::getPosition(window))) { simvol = 'ы'; bukva = 28; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(556, 384, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ъ'; bukva = 29; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 384, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'э'; bukva = 30; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(650, 384, 40, 35).contains(Mouse::getPosition(window))) { simvol = 'ю'; bukva = 31; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 384, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'я'; bukva = 32; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+
 			if (event.type == Event::Closed)
 				window.close();
 		}
 
+		if (proverka)
+		{
+			switch (bukva)
+			{
+			case 1: { for (int i = 0; i < num; i++) { a[i].setCharacterSize(40); a[i].setPosition(mass[i], 100); a[i].setColor(Color::Black); schetA++; } num = 0; } break;
+			case 2: { for (int i = 0; i < num; i++) { b[i].setCharacterSize(40); b[i].setPosition(mass[i], 100); b[i].setColor(Color::Black); schetB++; } num = 0; } break;
+			case 3: { for (int i = 0; i < num; i++) { v[i].setCharacterSize(40); v[i].setPosition(mass[i], 100); v[i].setColor(Color::Black); schetV++; } num = 0; } break;
+			case 4: { for (int i = 0; i < num; i++) { g[i].setCharacterSize(40); g[i].setPosition(mass[i], 100); g[i].setColor(Color::Black); schetG++; } num = 0; } break;
+			case 5: { for (int i = 0; i < num; i++) { d[i].setCharacterSize(40); d[i].setPosition(mass[i], 100); d[i].setColor(Color::Black); schetD++; } num = 0; } break;
+			case 6: { for (int i = 0; i < num; i++) { e[i].setCharacterSize(40); e[i].setPosition(mass[i], 100); e[i].setColor(Color::Black); schetE++; } num = 0; } break;
+			case 7: { for (int i = 0; i < num; i++) { j[i].setCharacterSize(40); j[i].setPosition(mass[i], 100); j[i].setColor(Color::Black); schetJ++; } num = 0; } break;
+			case 8: { for (int i = 0; i < num; i++) { z[i].setCharacterSize(40); z[i].setPosition(mass[i], 100); z[i].setColor(Color::Black); schetZ++; } num = 0; } break;
+			case 9: { for (int i = 0; i < num; i++) { i1[i].setCharacterSize(40); i1[i].setPosition(mass[i], 100); i1[i].setColor(Color::Black); schetI1++; } num = 0; } break;
+			case 10: { for (int i = 0; i < num; i++) { i2[i].setCharacterSize(40); i2[i].setPosition(mass[i], 100); i2[i].setColor(Color::Black); schetI2++; } num = 0; } break;
+			case 11: { for (int i = 0; i < num; i++) { k[i].setCharacterSize(40); k[i].setPosition(mass[i], 100); k[i].setColor(Color::Black); schetK++; } num = 0; } break;
+			case 12: { for (int i = 0; i < num; i++) { l[i].setCharacterSize(40); l[i].setPosition(mass[i], 100); l[i].setColor(Color::Black); schetL++; } num = 0; } break;
+			case 13: { for (int i = 0; i < num; i++) { m[i].setCharacterSize(40); m[i].setPosition(mass[i], 100); m[i].setColor(Color::Black); schetM++; } num = 0; } break;
+			case 14: { for (int i = 0; i < num; i++) { n[i].setCharacterSize(40); n[i].setPosition(mass[i], 100); n[i].setColor(Color::Black); schetN++; } num = 0; } break;
+			case 15: { for (int i = 0; i < num; i++) { o[i].setCharacterSize(40); o[i].setPosition(mass[i], 100); o[i].setColor(Color::Black); schetO++; } num = 0; } break;
+			case 16: { for (int i = 0; i < num; i++) { p[i].setCharacterSize(40); p[i].setPosition(mass[i], 100); p[i].setColor(Color::Black); schetP++; } num = 0; } break;
+			case 17: { for (int i = 0; i < num; i++) { r[i].setCharacterSize(40); r[i].setPosition(mass[i], 100); r[i].setColor(Color::Black); schetR++; } num = 0; } break;
+			case 18: { for (int i = 0; i < num; i++) { s[i].setCharacterSize(40); s[i].setPosition(mass[i], 100); s[i].setColor(Color::Black); schetS++; } num = 0; } break;
+			case 19: { for (int i = 0; i < num; i++) { t[i].setCharacterSize(40); t[i].setPosition(mass[i], 100); t[i].setColor(Color::Black); schetT++; } num = 0; } break;
+			case 20: { for (int i = 0; i < num; i++) { y[i].setCharacterSize(40); y[i].setPosition(mass[i], 100); y[i].setColor(Color::Black); schetY++; } num = 0; } break;
+			case 21: { for (int i = 0; i < num; i++) { f[i].setCharacterSize(40); f[i].setPosition(mass[i], 100); f[i].setColor(Color::Black); schetF++; } num = 0; } break;
+			case 22: { for (int i = 0; i < num; i++) { h[i].setCharacterSize(40); h[i].setPosition(mass[i], 100); h[i].setColor(Color::Black); schetH++; } num = 0; } break;
+			case 23: { for (int i = 0; i < num; i++) { c[i].setCharacterSize(40); c[i].setPosition(mass[i], 100); c[i].setColor(Color::Black); schetC++; } num = 0; } break;
+			case 24: { for (int i = 0; i < num; i++) { ch[i].setCharacterSize(40); ch[i].setPosition(mass[i], 100); ch[i].setColor(Color::Black); schetCH++; } num = 0; } break;
+			case 25: { for (int i = 0; i < num; i++) { sh[i].setCharacterSize(40); sh[i].setPosition(mass[i], 100); sh[i].setColor(Color::Black); schetSH++; } num = 0; } break;
+			case 26: { for (int i = 0; i < num; i++) { sch[i].setCharacterSize(40); sch[i].setPosition(mass[i], 100); sch[i].setColor(Color::Black); schetSCH++; } num = 0; } break;
+			case 27: { for (int i = 0; i < num; i++) { mya[i].setCharacterSize(40); mya[i].setPosition(mass[i], 100); mya[i].setColor(Color::Black); schetMYA++; } num = 0; } break;
+			case 28: { for (int i = 0; i < num; i++) { ii[i].setCharacterSize(40); ii[i].setPosition(mass[i], 100); ii[i].setColor(Color::Black); schetII++; } num = 0; } break;
+			case 29: { for (int i = 0; i < num; i++) { tv[i].setCharacterSize(40); tv[i].setPosition(mass[i], 100); tv[i].setColor(Color::Black); schetTV++; } num = 0; } break;
+			case 30: { for (int i = 0; i < num; i++) { e1[i].setCharacterSize(40); e1[i].setPosition(mass[i], 100); e1[i].setColor(Color::Black); schetE1++; } num = 0; } break;
+			case 31: { for (int i = 0; i < num; i++) { u[i].setCharacterSize(40); u[i].setPosition(mass[i], 100); u[i].setColor(Color::Black); schetU++; } num = 0; } break;
+			case 32: { for (int i = 0; i < num; i++) { ya[i].setCharacterSize(40); ya[i].setPosition(mass[i], 100); ya[i].setColor(Color::Black); schetYA++; } num = 0; } break;
+			}
+		}
+
+
 		window.clear();
 		window.draw(sprite);
 		window.draw(block);
+		
+		for (int i = 0; i < schetA + 1; i++) window.draw(a[i]);
+		for (int i = 0; i < schetB + 1; i++) window.draw(b[i]);
+		for (int i = 0; i < schetV + 1; i++) window.draw(v[i]);
+		for (int i = 0; i < schetG + 1; i++) window.draw(g[i]);
+		for (int i = 0; i < schetD + 1; i++) window.draw(d[i]);
+		for (int i = 0; i < schetE + 1; i++) window.draw(e[i]);
+		for (int i = 0; i < schetJ + 1; i++) window.draw(j[i]);
+		for (int i = 0; i < schetZ + 1; i++) window.draw(z[i]);
+		for (int i = 0; i < schetI1 + 1; i++) window.draw(i1[i]);
+		for (int i = 0; i < schetI2 + 1; i++) window.draw(i2[i]);
+		for (int i = 0; i < schetK + 1; i++) window.draw(k[i]);
+		for (int i = 0; i < schetL + 1; i++) window.draw(l[i]);
+		for (int i = 0; i < schetM + 1; i++) window.draw(m[i]);
+		for (int i = 0; i < schetN + 1; i++) window.draw(n[i]);
+		for (int i = 0; i < schetO + 1; i++) window.draw(o[i]);
+		for (int i = 0; i < schetP + 1; i++) window.draw(p[i]);
+		for (int i = 0; i < schetR + 1; i++) window.draw(r[i]);
+		for (int i = 0; i < schetS + 1; i++) window.draw(s[i]);
+		for (int i = 0; i < schetT + 1; i++) window.draw(t[i]);
+		for (int i = 0; i < schetY + 1; i++) window.draw(y[i]);
+		for (int i = 0; i < schetF + 1; i++) window.draw(f[i]);
+		for (int i = 0; i < schetH + 1; i++) window.draw(h[i]);
+		for (int i = 0; i < schetC + 1; i++) window.draw(c[i]);
+		for (int i = 0; i < schetCH + 1; i++) window.draw(ch[i]);
+		for (int i = 0; i < schetSH + 1; i++) window.draw(sh[i]);
+		for (int i = 0; i < schetSCH + 1; i++) window.draw(sch[i]);
+		for (int i = 0; i < schetMYA + 1; i++) window.draw(mya[i]);
+		for (int i = 0; i < schetII + 1; i++) window.draw(ii[i]);
+		for (int i = 0; i < schetTV + 1; i++) window.draw(tv[i]);
+		for (int i = 0; i < schetE1 + 1; i++) window.draw(e1[i]);
+		for (int i = 0; i < schetU + 1; i++) window.draw(u[i]);
+		for (int i = 0; i < schetYA + 1; i++) window.draw(ya[i]);
 
-		window.draw(a);
-		window.draw(b);
-		window.draw(v);
-		window.draw(g);
-		window.draw(d);
-		window.draw(e);
-		window.draw(e1);
-		window.draw(j);
-		window.draw(z);
-		window.draw(i);
-		window.draw(i1);
-		window.draw(k);
-		window.draw(l);
-		window.draw(m);
-		window.draw(n);
-		window.draw(o);
-		window.draw(p);
-		window.draw(r);
-		window.draw(s);
-		window.draw(t);
-		window.draw(y);
-		window.draw(f);
-		window.draw(h);
-		window.draw(c);
-		window.draw(ch);
-		window.draw(sh);
-		window.draw(sch);
-		window.draw(mya);
-		window.draw(ii);
-		window.draw(tv);
-		window.draw(e1);
-		window.draw(u);
-		window.draw(ya);
+		if (oshibki == 8) window.draw(vis1);
+		if (oshibki == 7) window.draw(vis2);
+		if (oshibki == 6) window.draw(vis3);
+		if (oshibki == 5) window.draw(vis4);
+		if (oshibki == 4) window.draw(vis5);
+		if (oshibki == 3) window.draw(vis6);
+		if (oshibki == 2) window.draw(vis7);
+		if (oshibki == 1) window.draw(vis8);
+		if (oshibki == 0) window.draw(vis9);
 
-		if (oshibki == 8)
-			window.draw(vis1);
-		if (oshibki == 7)
-			window.draw(vis2);
-		if (oshibki == 6)
-			window.draw(vis3);
-		if (oshibki == 5)
-			window.draw(vis4);
-		if (oshibki == 4)
-			window.draw(vis5);
-		if (oshibki == 3)
-			window.draw(vis6);
-		if (oshibki == 2)
-			window.draw(vis7);
-		if (oshibki == 1)
-			window.draw(vis8);
-		if (oshibki == 0)
-			window.draw(vis9);
-
-		if (oshibki == -1)
-			LOSE(window);
-		if (pravilno == dlina)
-			WIN(window);
+		if (oshibki == -1) LOSE(window);
+		if (pravilno == dlina) WIN(window);
 
 		switch (prov)
 		{
@@ -602,7 +505,7 @@ int main()
 		case 3: window.draw(povtorVibor); break;
 		}
 
-		window.display();	
+		window.display();
 	}
 	return 0;
 }
