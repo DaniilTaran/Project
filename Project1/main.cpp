@@ -1,5 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <fstream>
+#include <ctime>
+#include <cstring>
 #pragma warning(disable : 4996)
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 using namespace std;
@@ -95,14 +97,34 @@ void menu(RenderWindow & window)
 			}
 		}
 
-		if (IntRect(235, 245, 330, 40).contains(Mouse::getPosition(window))) { text1.setCharacterSize(50); text1.setPosition(228, 265); menuNum = 1; }
-		if (IntRect(220, 305, 350, 40).contains(Mouse::getPosition(window))) { text2.setCharacterSize(50); text2.setPosition(203, 325); menuNum = 2; }
-		if (IntRect(305, 365, 175, 40).contains(Mouse::getPosition(window))) { text3.setCharacterSize(50); text3.setPosition(305, 390); menuNum = 3; }
+		if (IntRect(235, 245, 330, 40).contains(Mouse::getPosition(window))) 
+		{ 
+			text1.setCharacterSize(50); 
+			text1.setPosition(228, 265); 
+			menuNum = 1; 
+		}
+		if (IntRect(220, 305, 350, 40).contains(Mouse::getPosition(window))) 
+		{ 
+			text2.setCharacterSize(50); 
+			text2.setPosition(203, 325);
+			menuNum = 2; 
+		}
+		if (IntRect(305, 365, 175, 40).contains(Mouse::getPosition(window))) 
+		{ 
+			text3.setCharacterSize(50); 
+			text3.setPosition(305, 390);
+			menuNum = 3; 
+		}
 
 		if (Mouse::isButtonPressed(Mouse::Left))
 		{
 			if (menuNum == 1) isMenu = false;
-			if (menuNum == 2) { window.draw(about); window.display(); while (!Keyboard::isKeyPressed(Keyboard::Escape)); }
+			if (menuNum == 2) 
+			{
+				window.draw(about); 
+				window.display(); 
+				while (!Keyboard::isKeyPressed(Keyboard::Escape)); 
+			}
 			if (menuNum == 3) { window.close(); isMenu = false; }
 
 		}
@@ -116,10 +138,9 @@ void menu(RenderWindow & window)
 	}
 }
 
-//‘ункци€ окна победы
+//‘ункци€ победы
 void WIN(RenderWindow & window)
 {
-
 	Texture winscreen;
 
 	winscreen.loadFromFile("images/ѕќЅ≈ƒј.png");
@@ -147,7 +168,7 @@ void WIN(RenderWindow & window)
 	}
 }
 
-//‘ункци€ окна проигрыша
+//‘ункци€ поражени€
 void LOSE(RenderWindow & window)
 {
 	Texture losescreen;
@@ -177,11 +198,10 @@ void LOSE(RenderWindow & window)
 	}
 }
 
-//‘ункци€ проверки выбранной буквы
+//‘ункци€ проверки буквы
 int proverkabukvi(char simvol, char *slovo, bool *proverka, int &oshibki, int &pravilno, int &schetPovtor, int &dlinaPovtorSimvol, char *povtorSimvol, int &prov, int &num, int &simvolnumber, int mass[], int razmer)
 {
-	char alphavit[66] = { 'а', 'б', 'в', 'г', 'д', 'е', 'Є', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ь', 'ы', 'ъ', 'э', 'ю', '€' };
-	int pos, pos1, sad = 0;
+	int pos, pos1, posSimvol = 0;
 	int dlina = strlen(slovo);
 	bool povtorbukvi = true;
 
@@ -201,19 +221,18 @@ int proverkabukvi(char simvol, char *slovo, bool *proverka, int &oshibki, int &p
 
 	for (int i = 0; i < num; i++)
 	{
-		for (sad; sad < dlina; sad++)
+		for (posSimvol; posSimvol < dlina; posSimvol++)
 		{
-			if (simvol == slovo[sad])
+			if (simvol == slovo[posSimvol])
 			{
 				pravilno++;
 				*proverka = true;
-				pos = sad + 1;
+				pos = posSimvol + 1;
 				prov = 1;
 				break;
 			}
 		}
 
-		//»щем позицию выбранной буквы и задаем ей координаты
 		switch (pos)
 		{
 		case 1: pos1 = 375 - 20.5*(dlina - 1); break;
@@ -235,7 +254,7 @@ int proverkabukvi(char simvol, char *slovo, bool *proverka, int &oshibki, int &p
 		}
 		
 		mass[i] = pos1;
-		sad = sad + 1;
+		posSimvol++;
 	}
 
 	if (!*proverka)
@@ -244,7 +263,6 @@ int proverkabukvi(char simvol, char *slovo, bool *proverka, int &oshibki, int &p
 		prov = 2;
 	}
 
-	//«апоминаем выбранную букву
 	povtorSimvol[schetPovtor] = simvol;
 	schetPovtor++;
 	dlinaPovtorSimvol = strlen(povtorSimvol);
@@ -254,9 +272,11 @@ int proverkabukvi(char simvol, char *slovo, bool *proverka, int &oshibki, int &p
 int main()
 {
 	RenderWindow window(VideoMode(800, 480), L"¬иселица");
+
 	const int razmer = 10;
 	char slovo[20], simvol, povtorSimvol[20] = " ";
-	int bukva, oshibki = 9, pravilno = 0, schetPovtor = 0, dlinaPovtorSimvol = 0, ver = 0, never = 0, prov = 0, num = 0, simvolnumber = 0, mass[razmer], aa = 0, aaa = 0, aaaa = 0;
+	int bukva, oshibki = 9, pravilno = 0, schetPovtor = 0, dlinaPovtorSimvol = 0;
+	int ver = 0, never = 0, prov = 0, num = 0, simvolnumber = 0, mass[razmer], aa = 0, aaa = 0, aaaa = 0;
 	int schetA = 0, schetB = 0, schetV = 0, schetG = 0, schetD = 0, schetE = 0, schetJ = 0, schetZ = 0, schetI1 = 0, schetI2 = 0, schetK = 0, schetL = 0, schetM = 0, schetN = 0, schetO = 0, schetP = 0, schetR = 0, schetS = 0, schetT = 0, schetY = 0, schetF = 0, schetH = 0, schetC = 0, schetCH = 0, schetSH = 0, schetSCH = 0, schetMYA = 0, schetII = 0, schetTV = 0, schetE1 = 0, schetU = 0, schetYA = 0;
 	float pos1 = 0;
 	bool proverka = false;
@@ -371,38 +391,70 @@ int main()
 		Event event;
 		while (window.pollEvent(event))
 		{
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(370, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'а'; bukva = 1; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(418, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'б'; bukva = 2; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'в'; bukva = 3; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(514, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'г'; bukva = 4; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(562, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'д'; bukva = 5; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'е'; bukva = 6; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(650, 240, 40, 35).contains(Mouse::getPosition(window))) { simvol = 'ж'; bukva = 7; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 240, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'з'; bukva = 8; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(370, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'и'; bukva = 9; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(418, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'й'; bukva = 10; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'к'; bukva = 11; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(514, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'л'; bukva = 12; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(560, 288, 32, 35).contains(Mouse::getPosition(window))) { simvol = 'м'; bukva = 13; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'н'; bukva = 14; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(648, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'о'; bukva = 15; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 288, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'п'; bukva = 16; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(370, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'р'; bukva = 17; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(418, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'с'; bukva = 18; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'т'; bukva = 19; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(514, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'у'; bukva = 20; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(562, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ф'; bukva = 21; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'х'; bukva = 22; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(648, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ц'; bukva = 23; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 336, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ч'; bukva = 24; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(365, 384, 40, 35).contains(Mouse::getPosition(window))) { simvol = 'ш'; bukva = 25; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(413, 384, 40, 35).contains(Mouse::getPosition(window))) { simvol = 'щ'; bukva = 26; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 384, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ь'; bukva = 27; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(511, 384, 35, 35).contains(Mouse::getPosition(window))) { simvol = 'ы'; bukva = 28; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(556, 384, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'ъ'; bukva = 29; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 384, 30, 35).contains(Mouse::getPosition(window))) { simvol = 'э'; bukva = 30; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(650, 384, 40, 35).contains(Mouse::getPosition(window))) { simvol = 'ю'; bukva = 31; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
-			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 384, 30, 35).contains(Mouse::getPosition(window))) { simvol = '€'; bukva = 32; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(370, 240, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'а'; bukva = 1; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(418, 240, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'б'; bukva = 2; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 240, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'в'; bukva = 3; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(514, 240, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'г'; bukva = 4; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(562, 240, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'д'; bukva = 5; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 240, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'е'; bukva = 6; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(650, 240, 40, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'ж'; bukva = 7; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 240, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'з'; bukva = 8; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(370, 288, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'и'; bukva = 9; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(418, 288, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'й'; bukva = 10; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 288, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'к'; bukva = 11; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(514, 288, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'л'; bukva = 12; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(560, 288, 32, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'м'; bukva = 13; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 288, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'н'; bukva = 14; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(648, 288, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'о'; bukva = 15; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 288, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'п'; bukva = 16; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(370, 336, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'р'; bukva = 17; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(418, 336, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'с'; bukva = 18; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 336, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'т'; bukva = 19; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(514, 336, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'у'; bukva = 20; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(562, 336, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'ф'; bukva = 21; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 336, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'х'; bukva = 22; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(648, 336, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'ц'; bukva = 23; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 336, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'ч'; bukva = 24; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(365, 384, 40, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'ш'; bukva = 25; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(413, 384, 40, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'щ'; bukva = 26; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(466, 384, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'ь'; bukva = 27; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(511, 384, 35, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'ы'; bukva = 28; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(556, 384, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'ъ'; bukva = 29; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(610, 384, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'э'; bukva = 30; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(650, 384, 40, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = 'ю'; bukva = 31; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
+			if ((Mouse::isButtonPressed(Mouse::Left)) && IntRect(703, 384, 30, 35).contains(Mouse::getPosition(window))) 
+			{ simvol = '€'; bukva = 32; proverkabukvi(simvol, slovo, &proverka, oshibki, pravilno, schetPovtor, dlinaPovtorSimvol, povtorSimvol, prov, num, simvolnumber, mass, razmer); }
 
 			if (event.type == Event::Closed)
 				window.close();
